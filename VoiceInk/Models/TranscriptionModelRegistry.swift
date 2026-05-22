@@ -41,6 +41,48 @@ enum TranscriptionModelRegistry {
                 supportedLanguages: LanguageDictionary.forProvider(isMultilingual: true, provider: .fluidAudio)
             ),
 
+            // MLX Audio Models
+            MLXAudioModel(
+                name: "qwen3-asr-0.6b-8bit",
+                displayName: "Qwen3-ASR 0.6B 8-bit",
+                description: "Qwen3-ASR via MLX Audio, optimized for Apple Silicon with multilingual recognition",
+                size: "0.6B",
+                speed: 0.82,
+                accuracy: 0.92,
+                ramUsage: 1.6,
+                modelScopeRepo: "mlx-community/Qwen3-ASR-0.6B-8bit",
+                requiresAppleSilicon: true,
+                supportedLanguages: LanguageDictionary.forProvider(isMultilingual: true, provider: .mlxAudio)
+            ),
+            MLXAudioModel(
+                name: "qwen3-asr-1.7b-8bit",
+                displayName: "Qwen3-ASR 1.7B 8-bit",
+                description: "Larger Qwen3-ASR model via MLX Audio for higher quality local transcription on Apple Silicon",
+                size: "1.7B",
+                speed: 0.62,
+                accuracy: 0.96,
+                ramUsage: 3.2,
+                modelScopeRepo: "mlx-community/Qwen3-ASR-1.7B-8bit",
+                requiresAppleSilicon: true,
+                supportedLanguages: LanguageDictionary.forProvider(isMultilingual: true, provider: .mlxAudio)
+            ),
+
+            // FunASR Models
+            FunASRModel(
+                name: "funasr-paraformer-zh",
+                displayName: "Paraformer Chinese (CPU)",
+                description: "FunASR Paraformer Chinese model with CPU-friendly offline transcription",
+                size: "220 MB",
+                speed: 0.88,
+                accuracy: 0.90,
+                ramUsage: 0.7,
+                modelScopeModel: "paraformer-zh",
+                vadModel: "fsmn-vad",
+                punctuationModel: "ct-punc",
+                requiresAppleSilicon: false,
+                supportedLanguages: LanguageDictionary.forProvider(isMultilingual: false, provider: .funASR)
+            ),
+
             // Local Models
             WhisperModel(
                 name: "ggml-tiny",

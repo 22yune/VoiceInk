@@ -15,6 +15,8 @@ struct VoiceInkApp: App {
     @StateObject private var engine: VoiceInkEngine
     @StateObject private var whisperModelManager: WhisperModelManager
     @StateObject private var fluidAudioModelManager: FluidAudioModelManager
+    @StateObject private var mlxAudioModelManager: MLXAudioModelManager
+    @StateObject private var funASRModelManager: FunASRModelManager
     @StateObject private var transcriptionModelManager: TranscriptionModelManager
     @StateObject private var recorderUIManager: RecorderUIManager
     @StateObject private var recordingShortcutManager: RecordingShortcutManager
@@ -111,9 +113,13 @@ struct VoiceInkApp: App {
         // 2. Create model managers
         let whisperModelManager = WhisperModelManager(modelsDirectory: modelsDirectory)
         let fluidAudioModelManager = FluidAudioModelManager()
+        let mlxAudioModelManager = MLXAudioModelManager()
+        let funASRModelManager = FunASRModelManager()
         let transcriptionModelManager = TranscriptionModelManager(
             whisperModelManager: whisperModelManager,
-            fluidAudioModelManager: fluidAudioModelManager
+            fluidAudioModelManager: fluidAudioModelManager,
+            mlxAudioModelManager: mlxAudioModelManager,
+            funASRModelManager: funASRModelManager
         )
 
         // 3. Create UI manager
@@ -123,6 +129,8 @@ struct VoiceInkApp: App {
         let engine = VoiceInkEngine(
             modelContext: resolvedContainer.mainContext,
             whisperModelManager: whisperModelManager,
+            mlxAudioModelManager: mlxAudioModelManager,
+            funASRModelManager: funASRModelManager,
             transcriptionModelManager: transcriptionModelManager,
             enhancementService: enhancementService
         )
@@ -141,6 +149,8 @@ struct VoiceInkApp: App {
 
         _whisperModelManager = StateObject(wrappedValue: whisperModelManager)
         _fluidAudioModelManager = StateObject(wrappedValue: fluidAudioModelManager)
+        _mlxAudioModelManager = StateObject(wrappedValue: mlxAudioModelManager)
+        _funASRModelManager = StateObject(wrappedValue: funASRModelManager)
         _transcriptionModelManager = StateObject(wrappedValue: transcriptionModelManager)
         _recorderUIManager = StateObject(wrappedValue: recorderUIManager)
         _engine = StateObject(wrappedValue: engine)
@@ -160,6 +170,8 @@ struct VoiceInkApp: App {
         let prewarmService = ModelPrewarmService(
             transcriptionModelManager: transcriptionModelManager,
             whisperModelManager: whisperModelManager,
+            mlxAudioModelManager: mlxAudioModelManager,
+            funASRModelManager: funASRModelManager,
             modelContext: resolvedContainer.mainContext
         )
         _prewarmService = StateObject(wrappedValue: prewarmService)
@@ -279,6 +291,8 @@ struct VoiceInkApp: App {
                     .environmentObject(engine)
                     .environmentObject(whisperModelManager)
                     .environmentObject(fluidAudioModelManager)
+                    .environmentObject(mlxAudioModelManager)
+                    .environmentObject(funASRModelManager)
                     .environmentObject(transcriptionModelManager)
                     .environmentObject(recorderUIManager)
                     .environmentObject(recordingShortcutManager)
@@ -335,6 +349,8 @@ struct VoiceInkApp: App {
                     .environmentObject(engine)
                     .environmentObject(whisperModelManager)
                     .environmentObject(fluidAudioModelManager)
+                    .environmentObject(mlxAudioModelManager)
+                    .environmentObject(funASRModelManager)
                     .environmentObject(transcriptionModelManager)
                     .environmentObject(recorderUIManager)
                     .environmentObject(aiService)
@@ -363,6 +379,8 @@ struct VoiceInkApp: App {
                 .environmentObject(engine)
                 .environmentObject(whisperModelManager)
                 .environmentObject(fluidAudioModelManager)
+                .environmentObject(mlxAudioModelManager)
+                .environmentObject(funASRModelManager)
                 .environmentObject(transcriptionModelManager)
                 .environmentObject(recorderUIManager)
                 .environmentObject(recordingShortcutManager)

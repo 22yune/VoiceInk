@@ -21,6 +21,8 @@ class VoiceInkEngine: NSObject, ObservableObject {
 
     // Injected managers
     let whisperModelManager: WhisperModelManager
+    let mlxAudioModelManager: MLXAudioModelManager
+    let funASRModelManager: FunASRModelManager
     let transcriptionModelManager: TranscriptionModelManager
     weak var recorderUIManager: RecorderUIManager?
 
@@ -34,11 +36,15 @@ class VoiceInkEngine: NSObject, ObservableObject {
     init(
         modelContext: ModelContext,
         whisperModelManager: WhisperModelManager,
+        mlxAudioModelManager: MLXAudioModelManager,
+        funASRModelManager: FunASRModelManager,
         transcriptionModelManager: TranscriptionModelManager,
         enhancementService: AIEnhancementService? = nil
     ) {
         self.modelContext = modelContext
         self.whisperModelManager = whisperModelManager
+        self.mlxAudioModelManager = mlxAudioModelManager
+        self.funASRModelManager = funASRModelManager
         self.transcriptionModelManager = transcriptionModelManager
         self.enhancementService = enhancementService
 
@@ -49,7 +55,9 @@ class VoiceInkEngine: NSObject, ObservableObject {
         self.serviceRegistry = TranscriptionServiceRegistry(
             modelProvider: whisperModelManager,
             modelsDirectory: whisperModelManager.modelsDirectory,
-            modelContext: modelContext
+            modelContext: modelContext,
+            mlxAudioModelManager: mlxAudioModelManager,
+            funASRModelManager: funASRModelManager
         )
         self.pipeline = TranscriptionPipeline(
             modelContext: modelContext,

@@ -8,6 +8,8 @@ class TranscriptionServiceRegistry {
     private weak var modelProvider: (any WhisperModelProvider)?
     private let modelsDirectory: URL
     private let modelContext: ModelContext
+    private let mlxAudioModelManager: MLXAudioModelManager
+    private let funASRModelManager: FunASRModelManager
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "TranscriptionServiceRegistry")
 
     private(set) lazy var localTranscriptionService = WhisperTranscriptionService(
@@ -17,11 +19,21 @@ class TranscriptionServiceRegistry {
     private(set) lazy var cloudTranscriptionService = CloudTranscriptionService(modelContext: modelContext)
     private(set) lazy var nativeAppleTranscriptionService = NativeAppleTranscriptionService()
     private(set) lazy var fluidAudioTranscriptionService = FluidAudioTranscriptionService()
+    private(set) lazy var mlxAudioTranscriptionService = MLXAudioTranscriptionService(modelManager: mlxAudioModelManager)
+    private(set) lazy var funASRTranscriptionService = FunASRTranscriptionService(modelManager: funASRModelManager)
 
-    init(modelProvider: any WhisperModelProvider, modelsDirectory: URL, modelContext: ModelContext) {
+    init(
+        modelProvider: any WhisperModelProvider,
+        modelsDirectory: URL,
+        modelContext: ModelContext,
+        mlxAudioModelManager: MLXAudioModelManager,
+        funASRModelManager: FunASRModelManager
+    ) {
         self.modelProvider = modelProvider
         self.modelsDirectory = modelsDirectory
         self.modelContext = modelContext
+        self.mlxAudioModelManager = mlxAudioModelManager
+        self.funASRModelManager = funASRModelManager
     }
 
     func service(for provider: ModelProvider) -> TranscriptionService {
@@ -32,6 +44,10 @@ class TranscriptionServiceRegistry {
             return fluidAudioTranscriptionService
         case .nativeApple:
             return nativeAppleTranscriptionService
+        case .mlxAudio:
+            return mlxAudioTranscriptionService
+        case .funASR:
+            return funASRTranscriptionService
         default:
             return cloudTranscriptionService
         }

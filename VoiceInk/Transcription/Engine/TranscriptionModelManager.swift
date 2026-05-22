@@ -9,18 +9,33 @@ class TranscriptionModelManager: ObservableObject {
 
     private weak var whisperModelManager: WhisperModelManager?
     private weak var fluidAudioModelManager: FluidAudioModelManager?
+    private weak var mlxAudioModelManager: MLXAudioModelManager?
+    private weak var funASRModelManager: FunASRModelManager?
 
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "TranscriptionModelManager")
 
-    init(whisperModelManager: WhisperModelManager, fluidAudioModelManager: FluidAudioModelManager) {
+    init(
+        whisperModelManager: WhisperModelManager,
+        fluidAudioModelManager: FluidAudioModelManager,
+        mlxAudioModelManager: MLXAudioModelManager,
+        funASRModelManager: FunASRModelManager
+    ) {
         self.whisperModelManager = whisperModelManager
         self.fluidAudioModelManager = fluidAudioModelManager
+        self.mlxAudioModelManager = mlxAudioModelManager
+        self.funASRModelManager = funASRModelManager
 
         // Wire up deletion callbacks so each manager notifies this manager.
         whisperModelManager.onModelDeleted = { [weak self] modelName in
             self?.handleModelDeleted(modelName)
         }
         fluidAudioModelManager.onModelDeleted = { [weak self] modelName in
+            self?.handleModelDeleted(modelName)
+        }
+        mlxAudioModelManager.onModelDeleted = { [weak self] modelName in
+            self?.handleModelDeleted(modelName)
+        }
+        funASRModelManager.onModelDeleted = { [weak self] modelName in
             self?.handleModelDeleted(modelName)
         }
 
@@ -31,17 +46,31 @@ class TranscriptionModelManager: ObservableObject {
         fluidAudioModelManager.onModelsChanged = { [weak self] in
             self?.refreshAllAvailableModels()
         }
+        mlxAudioModelManager.onModelsChanged = { [weak self] in
+            self?.refreshAllAvailableModels()
+        }
+        funASRModelManager.onModelsChanged = { [weak self] in
+            self?.refreshAllAvailableModels()
+        }
     }
 
     // MARK: - Computed: usable models
 
     var usableModels: [any TranscriptionModel] {
         allAvailableModels.filter { model in
+            guard isAvailableOnCurrentOS(model) else {
+                return false
+            }
+
             switch model.provider {
             case .whisper:
                 return whisperModelManager?.availableModels.contains { $0.name == model.name } ?? false
             case .fluidAudio:
                 return fluidAudioModelManager?.isFluidAudioModelDownloaded(named: model.name) ?? false
+            case .mlxAudio:
+                return mlxAudioModelManager?.isModelDownloaded(named: model.name) ?? false
+            case .funASR:
+                return funASRModelManager?.isModelDownloaded(named: model.name) ?? false
             case .nativeApple:
                 if #available(macOS 26, *) { return true } else { return false }
             case .custom:
@@ -59,6 +88,8 @@ class TranscriptionModelManager: ObservableObject {
         switch model.provider {
         case .nativeApple:
             if #available(macOS 26, *) { return true } else { return false }
+        case .mlxAudio:
+            return SystemArchitecture.isAppleSilicon
         default:
             return true
         }

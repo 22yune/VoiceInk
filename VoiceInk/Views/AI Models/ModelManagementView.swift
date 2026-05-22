@@ -14,6 +14,8 @@ enum ModelFilter: String, CaseIterable, Identifiable {
 struct ModelManagementView: View {
     @EnvironmentObject private var whisperModelManager: WhisperModelManager
     @EnvironmentObject private var fluidAudioModelManager: FluidAudioModelManager
+    @EnvironmentObject private var mlxAudioModelManager: MLXAudioModelManager
+    @EnvironmentObject private var funASRModelManager: FunASRModelManager
     @EnvironmentObject private var transcriptionModelManager: TranscriptionModelManager
     @State private var customModelToEdit: CustomCloudModel?
     @StateObject private var aiService = AIService()
@@ -174,6 +176,8 @@ struct ModelManagementView: View {
                         ModelCardView(
                             model: model,
                             fluidAudioModelManager: fluidAudioModelManager,
+                            mlxAudioModelManager: mlxAudioModelManager,
+                            funASRModelManager: funASRModelManager,
                             transcriptionModelManager: transcriptionModelManager,
                             isDownloaded: whisperModelManager.availableModels.contains { $0.name == model.name },
                             isCurrent: transcriptionModelManager.currentTranscriptionModel?.name == model.name,
@@ -198,6 +202,20 @@ struct ModelManagementView: View {
                                         }
                                     }
                                     isShowingDeleteAlert = true
+                                } else if let mlxAudioModel = model as? MLXAudioModel {
+                                    alertTitle = "Delete Model"
+                                    alertMessage = "Are you sure you want to delete the model '\(mlxAudioModel.displayName)'?"
+                                    deleteActionClosure = {
+                                        mlxAudioModelManager.deleteModel(mlxAudioModel)
+                                    }
+                                    isShowingDeleteAlert = true
+                                } else if let funASRModel = model as? FunASRModel {
+                                    alertTitle = "Delete Model"
+                                    alertMessage = "Are you sure you want to delete the model '\(funASRModel.displayName)'?"
+                                    deleteActionClosure = {
+                                        funASRModelManager.deleteModel(funASRModel)
+                                    }
+                                    isShowingDeleteAlert = true
                                 }
                             },
                             setDefaultAction: {
@@ -208,6 +226,10 @@ struct ModelManagementView: View {
                             downloadAction: {
                                 if let whisperModel = model as? WhisperModel {
                                     Task { await whisperModelManager.downloadModel(whisperModel) }
+                                } else if let mlxAudioModel = model as? MLXAudioModel {
+                                    Task { await mlxAudioModelManager.downloadModel(mlxAudioModel) }
+                                } else if let funASRModel = model as? FunASRModel {
+                                    Task { await funASRModelManager.downloadModel(funASRModel) }
                                 }
                             },
                             editAction: model.provider == .custom ? { customModel in
@@ -307,18 +329,23 @@ struct ModelManagementView: View {
         switch selectedFilter {
         case .recommended:
             return transcriptionModelManager.allAvailableModels.filter {
-                let recommendedNames = ["ggml-base.en", "parakeet-tdt-0.6b-v2", "ggml-large-v3-turbo-q5_0", "whisper-large-v3-turbo"]
+                let recommendedNames = ["ggml-base.en", "parakeet-tdt-0.6b-v2", "funasr-paraformer-zh", "qwen3-asr-0.6b-8bit", "ggml-large-v3-turbo-q5_0", "whisper-large-v3-turbo"]
                 return recommendedNames.contains($0.name)
             }.sorted { model1, model2 in
-                let recommendedOrder = ["ggml-base.en", "parakeet-tdt-0.6b-v2", "ggml-large-v3-turbo-q5_0", "whisper-large-v3-turbo"]
+                let recommendedOrder = ["ggml-base.en", "parakeet-tdt-0.6b-v2", "funasr-paraformer-zh", "qwen3-asr-0.6b-8bit", "ggml-large-v3-turbo-q5_0", "whisper-large-v3-turbo"]
                 let index1 = recommendedOrder.firstIndex(of: model1.name) ?? Int.max
                 let index2 = recommendedOrder.firstIndex(of: model2.name) ?? Int.max
                 return index1 < index2
             }
         case .local:
             return transcriptionModelManager.allAvailableModels.filter {
-                ($0.provider == .whisper || $0.provider == .nativeApple || $0.provider == .fluidAudio)
-                    && transcriptionModelManager.isAvailableOnCurrentOS($0)
+                guard $0.provider == .whisper || $0.provider == .nativeApple || $0.provider == .fluidAudio || $0.provider == .mlxAudio || $0.provider == .funASR else {
+                    return false
+                }
+                if $0.provider == .mlxAudio {
+                    return true
+                }
+                return transcriptionModelManager.isAvailableOnCurrentOS($0)
             }
         case .cloud:
             return transcriptionModelManager.allAvailableModels.filter { CloudProviderRegistry.provider(for: $0.provider) != nil }

@@ -4,6 +4,8 @@ import AppKit
 struct ModelCardView: View {
     let model: any TranscriptionModel
     let fluidAudioModelManager: FluidAudioModelManager
+    let mlxAudioModelManager: MLXAudioModelManager
+    let funASRModelManager: FunASRModelManager
     let transcriptionModelManager: TranscriptionModelManager
     let isDownloaded: Bool
     let isCurrent: Bool
@@ -56,6 +58,68 @@ struct ModelCardView: View {
                         model: nativeAppleModel,
                         isCurrent: isCurrent,
                         setDefaultAction: setDefaultAction
+                    )
+                }
+            case .mlxAudio:
+                if let mlxAudioModel = model as? MLXAudioModel {
+                    PythonLocalModelCardView(
+                        displayName: mlxAudioModel.displayName,
+                        language: mlxAudioModel.language,
+                        size: mlxAudioModel.size,
+                        description: mlxAudioModel.description,
+                        speed: mlxAudioModel.speed,
+                        accuracy: mlxAudioModel.accuracy,
+                        ramUsage: mlxAudioModel.ramUsage,
+                        requiresAppleSilicon: mlxAudioModel.requiresAppleSilicon,
+                        isRuntimeInstalled: mlxAudioModelManager.isRuntimeInstalled(),
+                        isDownloaded: mlxAudioModelManager.isModelDownloaded(mlxAudioModel),
+                        isCurrent: isCurrent,
+                        isBusy: mlxAudioModelManager.isModelBusy(mlxAudioModel),
+                        status: mlxAudioModelManager.status(for: mlxAudioModel),
+                        installRuntimeAction: {
+                            Task { await mlxAudioModelManager.installRuntime() }
+                        },
+                        downloadAction: {
+                            Task { await mlxAudioModelManager.downloadModel(mlxAudioModel) }
+                        },
+                        setDefaultAction: setDefaultAction,
+                        deleteAction: {
+                            mlxAudioModelManager.deleteModel(mlxAudioModel)
+                        },
+                        showInFinderAction: {
+                            mlxAudioModelManager.showModelInFinder(mlxAudioModel)
+                        }
+                    )
+                }
+            case .funASR:
+                if let funASRModel = model as? FunASRModel {
+                    PythonLocalModelCardView(
+                        displayName: funASRModel.displayName,
+                        language: funASRModel.language,
+                        size: funASRModel.size,
+                        description: funASRModel.description,
+                        speed: funASRModel.speed,
+                        accuracy: funASRModel.accuracy,
+                        ramUsage: funASRModel.ramUsage,
+                        requiresAppleSilicon: funASRModel.requiresAppleSilicon,
+                        isRuntimeInstalled: funASRModelManager.isRuntimeInstalled(),
+                        isDownloaded: funASRModelManager.isModelDownloaded(funASRModel),
+                        isCurrent: isCurrent,
+                        isBusy: funASRModelManager.isModelBusy(funASRModel),
+                        status: funASRModelManager.status(for: funASRModel),
+                        installRuntimeAction: {
+                            Task { await funASRModelManager.installRuntime() }
+                        },
+                        downloadAction: {
+                            Task { await funASRModelManager.downloadModel(funASRModel) }
+                        },
+                        setDefaultAction: setDefaultAction,
+                        deleteAction: {
+                            funASRModelManager.deleteModel(funASRModel)
+                        },
+                        showInFinderAction: {
+                            funASRModelManager.showModelInFinder(funASRModel)
+                        }
                     )
                 }
             case .custom:

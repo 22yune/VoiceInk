@@ -116,6 +116,12 @@ enum LanguageDictionary {
             filtered["auto"] = "Auto-detect"
             return filtered
 
+        case .mlxAudio:
+            return all
+
+        case .funASR:
+            return ["zh": "Chinese"]
+
         default:
             return all
         }

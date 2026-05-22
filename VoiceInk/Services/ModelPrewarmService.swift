@@ -7,19 +7,31 @@ import AppKit
 final class ModelPrewarmService: ObservableObject {
     private let transcriptionModelManager: TranscriptionModelManager
     private let whisperModelManager: WhisperModelManager
+    private let mlxAudioModelManager: MLXAudioModelManager
+    private let funASRModelManager: FunASRModelManager
     private let modelContext: ModelContext
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "ModelPrewarm")
     private lazy var serviceRegistry = TranscriptionServiceRegistry(
         modelProvider: whisperModelManager,
         modelsDirectory: whisperModelManager.modelsDirectory,
-        modelContext: modelContext
+        modelContext: modelContext,
+        mlxAudioModelManager: mlxAudioModelManager,
+        funASRModelManager: funASRModelManager
     )
     private let prewarmAudioURL = Bundle.main.url(forResource: "sound7", withExtension: "wav")
     private let prewarmEnabledKey = "PrewarmModelOnWake"
 
-    init(transcriptionModelManager: TranscriptionModelManager, whisperModelManager: WhisperModelManager, modelContext: ModelContext) {
+    init(
+        transcriptionModelManager: TranscriptionModelManager,
+        whisperModelManager: WhisperModelManager,
+        mlxAudioModelManager: MLXAudioModelManager,
+        funASRModelManager: FunASRModelManager,
+        modelContext: ModelContext
+    ) {
         self.transcriptionModelManager = transcriptionModelManager
         self.whisperModelManager = whisperModelManager
+        self.mlxAudioModelManager = mlxAudioModelManager
+        self.funASRModelManager = funASRModelManager
         self.modelContext = modelContext
         setupNotifications()
         schedulePrewarmOnAppLaunch()

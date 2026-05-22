@@ -116,7 +116,9 @@ class AudioTranscriptionManager: ObservableObject {
         let serviceRegistry = TranscriptionServiceRegistry(
             modelProvider: engine.whisperModelManager,
             modelsDirectory: engine.whisperModelManager.modelsDirectory,
-            modelContext: modelContext
+            modelContext: modelContext,
+            mlxAudioModelManager: engine.mlxAudioModelManager,
+            funASRModelManager: engine.funASRModelManager
         )
 
         do {

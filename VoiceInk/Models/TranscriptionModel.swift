@@ -16,6 +16,8 @@ enum ModelProvider: String, Codable, Hashable, CaseIterable {
     case cartesia = "Cartesia"
     case custom = "Custom"
     case nativeApple = "Native Apple"
+    case mlxAudio = "MLX Audio"
+    case funASR = "FunASR"
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -53,7 +55,13 @@ extension TranscriptionModel {
     }
 
     var language: String {
-        isMultilingualModel ? "Multilingual" : "English-only"
+        if isMultilingualModel {
+            return "Multilingual"
+        }
+        if supportedLanguages.count == 1, supportedLanguages["en"] != nil {
+            return "English-only"
+        }
+        return supportedLanguages.values.first ?? "Single-language"
     }
 
     var supportsStreaming: Bool { false }
@@ -97,6 +105,54 @@ struct FluidAudioModel: TranscriptionModel {
         self.ramUsage = ramUsage
         self.supportsStreaming = supportsStreaming
         self.supportedLanguages = supportedLanguages
+    }
+}
+
+struct MLXAudioModel: TranscriptionModel {
+    let id = UUID()
+    let name: String
+    let displayName: String
+    let description: String
+    let provider: ModelProvider = .mlxAudio
+    let size: String
+    let speed: Double
+    let accuracy: Double
+    let ramUsage: Double
+    let modelScopeRepo: String
+    let requiresAppleSilicon: Bool
+    let supportedLanguages: [String: String]
+
+    var isMultilingualModel: Bool {
+        supportedLanguages.count > 1
+    }
+
+    var localDirectoryName: String {
+        modelScopeRepo.replacingOccurrences(of: "/", with: "__")
+    }
+}
+
+struct FunASRModel: TranscriptionModel {
+    let id = UUID()
+    let name: String
+    let displayName: String
+    let description: String
+    let provider: ModelProvider = .funASR
+    let size: String
+    let speed: Double
+    let accuracy: Double
+    let ramUsage: Double
+    let modelScopeModel: String
+    let vadModel: String
+    let punctuationModel: String
+    let requiresAppleSilicon: Bool
+    let supportedLanguages: [String: String]
+
+    var isMultilingualModel: Bool {
+        supportedLanguages.count > 1
+    }
+
+    var localDirectoryName: String {
+        modelScopeModel
     }
 }
 
