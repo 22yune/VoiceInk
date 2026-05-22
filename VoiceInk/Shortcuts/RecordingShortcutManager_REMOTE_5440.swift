@@ -50,7 +50,6 @@ class RecordingShortcutManager: ObservableObject {
     private var shortcutChangeObserver: NSObjectProtocol?
     private let shortcutModeHandler: RecordingShortcutModeHandler
     private let primaryRecordingShortcutModeSource: RecordingShortcutModeSource
-    private var hasShownInputMonitoringWarning = false
 
     // MARK: - Helper Properties
     private var canHandleShortcutAction: Bool {
@@ -225,7 +224,7 @@ class RecordingShortcutManager: ObservableObject {
             interruptibleRecordingActions.insert(.secondaryRecording)
         }
 
-        let didStart = shortcutMonitor.start(
+        shortcutMonitor.start(
             shortcuts: shortcuts,
             interruptibleActions: interruptibleRecordingActions,
             onKeyDown: { [weak self] action, eventTime in
@@ -260,25 +259,6 @@ class RecordingShortcutManager: ObservableObject {
                 }
             }
         )
-
-        if !didStart, !shortcuts.isEmpty, !hasShownInputMonitoringWarning {
-            hasShownInputMonitoringWarning = true
-            NotificationManager.shared.showNotification(
-                title: "Enable Input Monitoring for VoiceInk shortcuts",
-                type: .warning,
-                duration: 6,
-                actionButton: (
-                    label: "Open Settings",
-                    action: {
-                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent") {
-                            NSWorkspace.shared.open(url)
-                        }
-                    }
-                )
-            )
-        } else if didStart {
-            hasShownInputMonitoringWarning = false
-        }
     }
 
     private func recordingMode(for action: ShortcutAction) -> Mode? {

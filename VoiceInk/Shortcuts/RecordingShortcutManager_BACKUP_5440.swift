@@ -48,9 +48,12 @@ class RecordingShortcutManager: ObservableObject {
     private let powerModeShortcutManager: PowerModeShortcutManager
     private let shortcutMonitor = ShortcutMonitor()
     private var shortcutChangeObserver: NSObjectProtocol?
+<<<<<<< HEAD
+    private var hasShownInputMonitoringWarning = false
+=======
     private let shortcutModeHandler: RecordingShortcutModeHandler
     private let primaryRecordingShortcutModeSource: RecordingShortcutModeSource
-    private var hasShownInputMonitoringWarning = false
+>>>>>>> main
 
     // MARK: - Helper Properties
     private var canHandleShortcutAction: Bool {
